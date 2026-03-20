@@ -54,7 +54,12 @@
 - [x] Finder 폴더 선택 → 해당 폴더로 열림
 - [x] Finder 파일 선택 → 부모 폴더로 열림
 - [x] 소켓 접근 거부 → Automation mode 안내 메시지
-- [ ] List Workspaces 전체 시나리오 테스트 (별도 진행 필요)
+- [x] List Workspaces: cmux ON → workspace 목록 표시 정상
+- [x] List Workspaces: cmux OFF → 캐시된 목록 표시, "오프라인" 태그
+- [x] List Workspaces: cmux OFF → Enter → cmux 실행 + workspace 전환 정상
+- [x] useCachedPromise 에러 바 억제 (onError: () => {})
+- [x] 초록 점(selected 표시) 제거
+- [ ] open-in-cmux cmux OFF 속도 개선 (진행 중)
 
 ## Phase 6: (선택) 배포 준비
 - [ ] 아이콘 디자인 (512×512 PNG → `assets/extension-icon.png`)

@@ -131,6 +131,24 @@ export function focusCmux(): void {
 }
 
 /**
+ * cmux가 꺼진 상태에서 실행 후 특정 workspace를 선택합니다.
+ * 소켓이 올라올 때까지 최대 10초 폴링합니다.
+ */
+export async function launchAndSelectWorkspace(wsRef: string): Promise<void> {
+  spawnSync("open", ["-a", "/Applications/cmux.app"]);
+  const deadline = Date.now() + 10000;
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 600));
+    try {
+      selectWorkspace(wsRef);
+      return;
+    } catch {
+      // 아직 소켓 준비 안 됨 — 재시도
+    }
+  }
+}
+
+/**
  * Finder에서 현재 선택/열려있는 디렉토리 경로를 반환합니다.
  * - 경로 문자열: 정상
  * - "": Finder 창 없음

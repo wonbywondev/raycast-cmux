@@ -10,14 +10,36 @@ import {
   showToast,
 } from "@raycast/api";
 import { useCachedPromise } from "@raycast/utils";
-import { CmuxAccessDeniedError, CmuxNotRunningError, Workspace, closeWorkspace, focusCmux, listWorkspaces, openWorkspace, selectWorkspace } from "./utils";
+import { CmuxAccessDeniedError, CmuxNotRunningError, Workspace, closeWorkspace, focusCmux, launchAndSelectWorkspace, listWorkspaces, openWorkspace, selectWorkspace } from "./utils";
 
 export default function ListWorkspacesCommand() {
   const { data, isLoading, error, revalidate } = useCachedPromise(listWorkspaces, [], {
     keepPreviousData: true,
+    onError: () => {}, // 에러는 렌더에서 직접 처리 — 기본 에러 바 억제
   });
 
-  if (error instanceof CmuxNotRunningError || error?.name === "CmuxNotRunningError") {
+  const isNotRunning = error instanceof CmuxNotRunningError || error?.name === "CmuxNotRunningError";
+  const isAccessDenied = error instanceof CmuxAccessDeniedError || error?.name === "CmuxAccessDeniedError";
+
+  // cmux 미실행이지만 캐시 데이터가 있으면 목록을 계속 표시
+  if (isNotRunning && data && data.length > 0) {
+    return (
+      <List
+        isLoading={false}
+        searchBarAccessory={
+          <List.Dropdown tooltip="상태" onChange={() => {}}>
+            <List.Dropdown.Item title="⚠ cmux 꺼짐 — 캐시된 목록" value="off" />
+          </List.Dropdown>
+        }
+      >
+        {data.map((ws) => (
+          <WorkspaceItem key={ws.ref} workspace={ws} onRefresh={revalidate} cmuxOff />
+        ))}
+      </List>
+    );
+  }
+
+  if (isNotRunning) {
     return (
       <List>
         <List.EmptyView
@@ -29,8 +51,12 @@ export default function ListWorkspacesCommand() {
               <Action
                 title="cmux 실행"
                 icon={Icon.Play}
-                onAction={() => open("/Applications/cmux.app")}
+                onAction={async () => {
+                  await open("/Applications/cmux.app");
+                  setTimeout(revalidate, 2000);
+                }}
               />
+              <Action title="새로고침" icon={Icon.RotateClockwise} onAction={revalidate} />
             </ActionPanel>
           }
         />
@@ -38,7 +64,7 @@ export default function ListWorkspacesCommand() {
     );
   }
 
-  if (error instanceof CmuxAccessDeniedError || error?.name === "CmuxAccessDeniedError") {
+  if (isAccessDenied) {
     return (
       <List>
         <List.EmptyView
@@ -66,13 +92,10 @@ export default function ListWorkspacesCommand() {
   );
 }
 
-function WorkspaceItem({ workspace: ws, onRefresh }: { workspace: Workspace; onRefresh: () => void }) {
+function WorkspaceItem({ workspace: ws, onRefresh, cmuxOff = false }: { workspace: Workspace; onRefresh: () => void; cmuxOff?: boolean }) {
   const accessories: List.Item.Accessory[] = [];
 
-  if (ws.selected) {
-    accessories.push({ icon: { source: Icon.Dot, tintColor: Color.Green }, tooltip: "Active" });
-  }
-  if (ws.pinned) {
+if (ws.pinned) {
     accessories.push({ icon: Icon.Pin, tooltip: "Pinned" });
   }
   if (ws.listening_ports && ws.listening_ports.length > 0) {
@@ -83,13 +106,20 @@ function WorkspaceItem({ workspace: ws, onRefresh }: { workspace: Workspace; onR
     <List.Item
       title={ws.title || `Workspace ${ws.index}`}
       subtitle={ws.current_directory}
-      accessories={accessories}
+      accessories={[...accessories, ...(cmuxOff ? [{ tag: { value: "오프라인", color: Color.SecondaryText } }] : [])]}
       actions={
         <ActionPanel>
           <Action
             title="Switch to Workspace"
             icon={Icon.ArrowRight}
             onAction={async () => {
+              if (cmuxOff) {
+                await showToast({ style: Toast.Style.Animated, title: `cmux 실행 중...` });
+                await launchAndSelectWorkspace(ws.ref);
+                focusCmux();
+                await showToast({ style: Toast.Style.Success, title: `Switched to ${ws.title}` });
+                return;
+              }
               try {
                 selectWorkspace(ws.ref);
                 focusCmux();
@@ -99,7 +129,7 @@ function WorkspaceItem({ workspace: ws, onRefresh }: { workspace: Workspace; onR
               }
             }}
           />
-          <Action
+          {!cmuxOff && <Action
             title="Open Directory as New Workspace"
             icon={Icon.Plus}
             shortcut={{ modifiers: ["cmd"], key: "o" }}
@@ -112,7 +142,7 @@ function WorkspaceItem({ workspace: ws, onRefresh }: { workspace: Workspace; onR
                 await showToast({ style: Toast.Style.Failure, title: String(err) });
               }
             }}
-          />
+          />}
           <Action
             title="Copy Path"
             icon={Icon.Clipboard}
