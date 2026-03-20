@@ -6,14 +6,13 @@ interface Preferences {
 }
 
 export interface Workspace {
-  id: string;
   ref: string;
   index: number;
   title: string;
   selected: boolean;
   pinned: boolean;
   current_directory: string;
-  listening_ports: number[];
+  listening_ports?: number[];
   custom_color: string | null;
 }
 
@@ -38,33 +37,33 @@ export class CmuxNotRunningError extends Error {
   }
 }
 
+export class CmuxAccessDeniedError extends Error {
+  constructor() {
+    super("cmux socket access denied — Automation mode required");
+    this.name = "CmuxAccessDeniedError";
+  }
+}
+
 export async function listWorkspaces(): Promise<Workspace[]> {
   const { stdout, stderr } = runCmux(["--json", "list-workspaces"]);
 
-  // cmux가 실행 중이 아닐 때 stdout/stderr 어디에든 올 수 있음
-  if (stdout.includes("Socket not found") || stderr.includes("Socket not found")) {
-    throw new CmuxNotRunningError();
-  }
+  const combined = stdout + stderr;
+  if (combined.includes("Socket not found")) throw new CmuxNotRunningError();
+  if (combined.includes("Access denied")) throw new CmuxAccessDeniedError();
 
-  let parsed: { ok: boolean; error?: string; result?: { workspaces: Workspace[] } };
+  let parsed: { workspaces?: Workspace[]; ok?: boolean; error?: string };
   try {
     parsed = JSON.parse(stdout);
   } catch {
     throw new CmuxNotRunningError();
   }
 
-  if (!parsed.ok) {
-    throw new Error(parsed.error || "Unknown cmux error");
+  // 실제 응답: { window_ref, workspaces: [...] } (ok wrapper 없음)
+  if (Array.isArray(parsed.workspaces)) {
+    return parsed.workspaces;
   }
 
-  return parsed.result!.workspaces;
-}
-
-export class CmuxAccessDeniedError extends Error {
-  constructor() {
-    super("cmux socket access denied — Automation mode required");
-    this.name = "CmuxAccessDeniedError";
-  }
+  throw new Error(parsed.error || "Unknown cmux error");
 }
 
 function checkCmuxRunning(stdout: string, stderr: string): void {

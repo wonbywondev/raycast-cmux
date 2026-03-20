@@ -17,7 +17,7 @@ export default function ListWorkspacesCommand() {
     keepPreviousData: true,
   });
 
-  if (error instanceof CmuxNotRunningError) {
+  if (error instanceof CmuxNotRunningError || error?.name === "CmuxNotRunningError") {
     return (
       <List>
         <List.EmptyView
@@ -38,7 +38,7 @@ export default function ListWorkspacesCommand() {
     );
   }
 
-  if (error instanceof CmuxAccessDeniedError) {
+  if (error instanceof CmuxAccessDeniedError || error?.name === "CmuxAccessDeniedError") {
     return (
       <List>
         <List.EmptyView
@@ -61,7 +61,7 @@ export default function ListWorkspacesCommand() {
 
   return (
     <List isLoading={isLoading}>
-      {data?.map((ws) => <WorkspaceItem key={ws.id} workspace={ws} onRefresh={revalidate} />)}
+      {data?.map((ws) => <WorkspaceItem key={ws.ref} workspace={ws} onRefresh={revalidate} />)}
     </List>
   );
 }
@@ -75,7 +75,7 @@ function WorkspaceItem({ workspace: ws, onRefresh }: { workspace: Workspace; onR
   if (ws.pinned) {
     accessories.push({ icon: Icon.Pin, tooltip: "Pinned" });
   }
-  if (ws.listening_ports.length > 0) {
+  if (ws.listening_ports && ws.listening_ports.length > 0) {
     accessories.push({ text: ws.listening_ports.map((p) => `:${p}`).join(" ") });
   }
 
@@ -91,7 +91,7 @@ function WorkspaceItem({ workspace: ws, onRefresh }: { workspace: Workspace; onR
             icon={Icon.ArrowRight}
             onAction={async () => {
               try {
-                selectWorkspace(ws.id);
+                selectWorkspace(ws.ref);
                 focusCmux();
                 await showToast({ style: Toast.Style.Success, title: `Switched to ${ws.title}` });
               } catch (err) {
@@ -129,7 +129,7 @@ function WorkspaceItem({ workspace: ws, onRefresh }: { workspace: Workspace; onR
             shortcut={{ modifiers: ["cmd"], key: "delete" }}
             onAction={async () => {
               try {
-                closeWorkspace(ws.id);
+                closeWorkspace(ws.ref);
                 onRefresh();
                 await showToast({ style: Toast.Style.Success, title: `Closed ${ws.title}` });
               } catch (err) {
