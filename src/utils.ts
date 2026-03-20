@@ -1,5 +1,5 @@
 import { getPreferenceValues } from "@raycast/api";
-import { spawn, spawnSync } from "child_process";
+import { spawnSync } from "child_process";
 
 interface Preferences {
   cmuxPath: string;
@@ -95,30 +95,22 @@ export function openWorkspace(cwd: string): string {
 
 /**
  * cmux가 꺼진 상태에서 경로를 엽니다.
- * `cmux <path>` 명령은 앱 실행 + workspace 생성을 원자적으로 처리합니다.
- * Promise로 감싸 이벤트 루프를 블로킹하지 않습니다.
- * @returns 생성된 workspace ID (select-workspace에 사용)
+ * open -a로 앱을 즉시 실행(~0.85초 내 소켓 준비),
+ * 100ms 간격으로 new-workspace를 폴링하여 소켓 올라오면 바로 생성합니다.
  */
-export function openPathInCmux(path: string): Promise<string> {
+export async function openPathInCmux(path: string): Promise<string> {
+  spawnSync("open", ["-a", "/Applications/cmux.app"]);
   const cleanPath = path.replace(/\/$/, "");
-  return new Promise((resolve) => {
-    const proc = spawn(getCmuxPath(), [cleanPath]);
-    let stdout = "";
-    proc.stdout.on("data", (d: Buffer) => (stdout += d.toString()));
-    const timer = setTimeout(() => {
-      proc.kill();
-      resolve("");
-    }, 15000);
-    proc.on("close", () => {
-      clearTimeout(timer);
-      const match = stdout.trim().match(/^OK\s+(.+)$/);
-      resolve(match ? match[1] : "");
-    });
-    proc.on("error", () => {
-      clearTimeout(timer);
-      resolve("");
-    });
-  });
+  const deadline = Date.now() + 8000;
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 100));
+    try {
+      return openWorkspace(cleanPath);
+    } catch {
+      // 아직 소켓 준비 안 됨 — 재시도
+    }
+  }
+  return "";
 }
 
 export function closeWorkspace(id: string): void {

@@ -113,7 +113,8 @@ end tell
 | 날짜 | 항목 | 결정 | 이유 |
 |------|------|------|------|
 | 2026-03-20 | CLI 실행 방식 | `spawnSync` (execSync 대신) | 경로에 공백 포함 시 quoting 불필요, stdout/stderr 분리 명확 |
-| 2026-03-20 | cmux OFF 처리 | `cmux <path>` + `spawn` 비동기 | `new-workspace`는 소켓 필요, `cmux <path>`는 앱 실행 포함; 비동기로 HUD 블로킹 방지 |
+| 2026-03-20 | cmux OFF 처리 | `open -a` + 100ms 폴링 | `open -a` 즉시 반환, 소켓 준비까지 실측 ~0.85초; `cmux <path>` 방식보다 빠름 |
+| 2026-03-20 | `open -a cmux /path` 방식 | 불채택 | 실행 중인 cmux에서 `application(_:open:urls:)` 미호출 — workspace 미생성 확인 |
 | 2026-03-20 | workspace 포커스 | `new-workspace` 후 즉시 `select-workspace` | `new-workspace`만으로는 포커스 전환 안 됨 |
 | 2026-03-20 | Socket Control | Automation mode 필수 | 기본 cmuxOnly 모드는 외부 프로세스 차단 |
 
