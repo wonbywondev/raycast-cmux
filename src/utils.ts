@@ -1,5 +1,8 @@
 import { getPreferenceValues } from "@raycast/api";
-import { spawnSync } from "child_process";
+import { spawn, spawnSync } from "child_process";
+import { existsSync } from "fs";
+import { homedir } from "os";
+import { join } from "path";
 
 interface Preferences {
   cmuxPath: string;
@@ -98,17 +101,23 @@ export function openWorkspace(cwd: string): string {
  * open -a로 앱을 즉시 실행(~0.85초 내 소켓 준비),
  * 100ms 간격으로 new-workspace를 폴링하여 소켓 올라오면 바로 생성합니다.
  */
+const CMUX_SOCKET_PATH = join(homedir(), "Library", "Application Support", "cmux", "cmux.sock");
+
 export async function openPathInCmux(path: string): Promise<string> {
-  spawnSync("open", ["-a", "/Applications/cmux.app"]);
+  // spawn(비동기)으로 즉시 반환 — 이벤트 루프 블로킹 없음
+  spawn("open", ["-a", "/Applications/cmux.app"]);
   const cleanPath = path.replace(/\/$/, "");
   const deadline = Date.now() + 8000;
   while (Date.now() < deadline) {
-    await new Promise((r) => setTimeout(r, 100));
-    try {
-      return openWorkspace(cleanPath);
-    } catch {
-      // 아직 소켓 준비 안 됨 — 재시도
+    // 소켓 파일 존재 확인 후 CLI 호출 — 소켓 없으면 CLI가 2.5초 대기하므로 스킵
+    if (existsSync(CMUX_SOCKET_PATH)) {
+      try {
+        return openWorkspace(cleanPath);
+      } catch {
+        // 소켓 파일은 있지만 아직 준비 안 됨 — 재시도
+      }
     }
+    await new Promise((r) => setTimeout(r, 50));
   }
   return "";
 }
@@ -127,16 +136,18 @@ export function focusCmux(): void {
  * 소켓이 올라올 때까지 최대 10초 폴링합니다.
  */
 export async function launchAndSelectWorkspace(wsRef: string): Promise<void> {
-  spawnSync("open", ["-a", "/Applications/cmux.app"]);
+  spawn("open", ["-a", "/Applications/cmux.app"]);
   const deadline = Date.now() + 10000;
   while (Date.now() < deadline) {
-    await new Promise((r) => setTimeout(r, 600));
-    try {
-      selectWorkspace(wsRef);
-      return;
-    } catch {
-      // 아직 소켓 준비 안 됨 — 재시도
+    if (existsSync(CMUX_SOCKET_PATH)) {
+      try {
+        selectWorkspace(wsRef);
+        return;
+      } catch {
+        // 소켓 파일은 있지만 아직 준비 안 됨 — 재시도
+      }
     }
+    await new Promise((r) => setTimeout(r, 50));
   }
 }
 

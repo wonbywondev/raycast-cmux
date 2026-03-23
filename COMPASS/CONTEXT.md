@@ -117,6 +117,8 @@ end tell
 | 2026-03-20 | `open -a cmux /path` 방식 | 불채택 | 실행 중인 cmux에서 `application(_:open:urls:)` 미호출 — workspace 미생성 확인 |
 | 2026-03-20 | workspace 포커스 | `new-workspace` 후 즉시 `select-workspace` | `new-workspace`만으로는 포커스 전환 안 됨 |
 | 2026-03-20 | Socket Control | Automation mode 필수 | 기본 cmuxOnly 모드는 외부 프로세스 차단 |
+| 2026-03-20 | cmux OFF 속도 최적화 | `existsSync(socketPath)` 가드 추가 | CLI는 소켓 없을 때 2.5초 연결 타임아웃 대기. 소켓 파일 존재 확인으로 ~0ms 스킵 가능. 폴링 주기 50ms 유지 |
+| 2026-03-24 | List stale cache | 미해결 | cmux 열었다 닫으면 목록이 직전 캐시 유지. useCachedPromise는 수동 revalidate 없이 자동 갱신 안 함. 해결 방안 검토 필요 (polling, focus 이벤트 등) |
 
 ---
 

@@ -57,10 +57,11 @@
 - [x] List Workspaces: cmux ON → workspace 목록 표시 정상
 - [x] List Workspaces: cmux OFF → 캐시된 목록 표시, "오프라인" 태그
 - [x] List Workspaces: cmux OFF → Enter → cmux 실행 + workspace 전환 정상
-- [x] useCachedPromise 에러 바 억제 (onError: () => {})
+- [x] useCachedPromise 에러 바 억제 (onError: () => {}) — 확인됨
+- [ ] List Workspaces: cmux 열었다 닫으면 목록 갱신 안 됨 (stale cache 이슈, 미해결)
 - [x] 초록 점(selected 표시) 제거
 - [x] open-in-cmux cmux OFF 속도 개선 (100ms 폴링, ~1초)
-- [ ] open-in-cmux cmux OFF 추가 속도 개선 (진행 중)
+- [x] open-in-cmux cmux OFF 추가 속도 개선: `existsSync(socketPath)` 가드로 CLI 2.5초 타임아웃 제거 (~50ms 폴링)
 
 ## Phase 6: (선택) 배포 준비
 - [ ] 아이콘 디자인 (512×512 PNG → `assets/extension-icon.png`)
