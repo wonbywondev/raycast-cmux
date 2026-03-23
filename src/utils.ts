@@ -48,6 +48,8 @@ export class CmuxAccessDeniedError extends Error {
 }
 
 export async function listWorkspaces(): Promise<Workspace[]> {
+  // 소켓 없으면 CLI 2.5초 타임아웃 없이 즉시 실패
+  if (!existsSync(CMUX_SOCKET_PATH)) throw new CmuxNotRunningError();
   const { stdout, stderr } = runCmux(["--json", "list-workspaces"]);
 
   const combined = stdout + stderr;

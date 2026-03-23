@@ -58,7 +58,9 @@
 - [x] List Workspaces: cmux OFF → 캐시된 목록 표시, "오프라인" 태그
 - [x] List Workspaces: cmux OFF → Enter → cmux 실행 + workspace 전환 정상
 - [x] useCachedPromise 에러 바 억제 (onError: () => {}) — 확인됨
-- [ ] List Workspaces: cmux 열었다 닫으면 목록 갱신 안 됨 (stale cache 이슈, 미해결)
+- [x] List Workspaces: 2초 폴링으로 자동 갱신 (existsSync 가드로 OFF 시 ~0ms 비용)
+- [x] List Workspaces: 오프라인 태그/상태 제거 — 캐시 데이터 있으면 항상 목록 표시
+- [x] List Workspaces: cmux OFF 상태에서 Enter → 자동 실행 + workspace 전환
 - [x] 초록 점(selected 표시) 제거
 - [x] open-in-cmux cmux OFF 속도 개선 (100ms 폴링, ~1초)
 - [x] open-in-cmux cmux OFF 추가 속도 개선: `existsSync(socketPath)` 가드로 CLI 2.5초 타임아웃 제거 (~50ms 폴링)

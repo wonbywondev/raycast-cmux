@@ -2,7 +2,6 @@ import {
   Action,
   ActionPanel,
   Clipboard,
-  Color,
   Icon,
   List,
   Toast,
@@ -10,6 +9,7 @@ import {
   showToast,
 } from "@raycast/api";
 import { useCachedPromise } from "@raycast/utils";
+import { useEffect } from "react";
 import { CmuxAccessDeniedError, CmuxNotRunningError, Workspace, closeWorkspace, focusCmux, launchAndSelectWorkspace, listWorkspaces, openWorkspace, selectWorkspace } from "./utils";
 
 export default function ListWorkspacesCommand() {
@@ -18,23 +18,43 @@ export default function ListWorkspacesCommand() {
     onError: () => {}, // 에러는 렌더에서 직접 처리 — 기본 에러 바 억제
   });
 
-  const isNotRunning = error instanceof CmuxNotRunningError || error?.name === "CmuxNotRunningError";
   const isAccessDenied = error instanceof CmuxAccessDeniedError || error?.name === "CmuxAccessDeniedError";
+  const isNotRunning = !isAccessDenied && (error instanceof CmuxNotRunningError || error?.name === "CmuxNotRunningError");
 
-  // cmux 미실행이지만 캐시 데이터가 있으면 목록을 계속 표시
-  if (isNotRunning && data && data.length > 0) {
+  // 2초마다 자동 갱신 — cmux OFF 시 existsSync 가드로 ~0ms 즉시 실패
+  useEffect(() => {
+    const id = setInterval(revalidate, 2000);
+    return () => clearInterval(id);
+  }, [revalidate]);
+
+  // 캐시 데이터가 있으면 cmux 상태와 무관하게 목록 표시
+  if (data && data.length > 0) {
     return (
-      <List
-        isLoading={false}
-        searchBarAccessory={
-          <List.Dropdown tooltip="상태" onChange={() => {}}>
-            <List.Dropdown.Item title="⚠ cmux 꺼짐 — 캐시된 목록" value="off" />
-          </List.Dropdown>
-        }
-      >
+      <List isLoading={isLoading && !data}>
         {data.map((ws) => (
-          <WorkspaceItem key={ws.ref} workspace={ws} onRefresh={revalidate} cmuxOff />
+          <WorkspaceItem key={ws.ref} workspace={ws} onRefresh={revalidate} />
         ))}
+      </List>
+    );
+  }
+
+  if (isAccessDenied) {
+    return (
+      <List>
+        <List.EmptyView
+          icon={Icon.Lock}
+          title="접근 권한 없음"
+          description="cmux Settings → Socket Control → Automation mode로 변경하세요"
+          actions={
+            <ActionPanel>
+              <Action
+                title="cmux 설정 열기"
+                icon={Icon.Gear}
+                onAction={() => open("/Applications/cmux.app")}
+              />
+            </ActionPanel>
+          }
+        />
       </List>
     );
   }
@@ -64,38 +84,13 @@ export default function ListWorkspacesCommand() {
     );
   }
 
-  if (isAccessDenied) {
-    return (
-      <List>
-        <List.EmptyView
-          icon={Icon.Lock}
-          title="접근 권한 없음"
-          description="cmux Settings → Socket Control → Automation mode로 변경하세요"
-          actions={
-            <ActionPanel>
-              <Action
-                title="cmux 설정 열기"
-                icon={Icon.Gear}
-                onAction={() => open("/Applications/cmux.app")}
-              />
-            </ActionPanel>
-          }
-        />
-      </List>
-    );
-  }
-
-  return (
-    <List isLoading={isLoading}>
-      {data?.map((ws) => <WorkspaceItem key={ws.ref} workspace={ws} onRefresh={revalidate} />)}
-    </List>
-  );
+  return <List isLoading={isLoading} />;
 }
 
-function WorkspaceItem({ workspace: ws, onRefresh, cmuxOff = false }: { workspace: Workspace; onRefresh: () => void; cmuxOff?: boolean }) {
+function WorkspaceItem({ workspace: ws, onRefresh }: { workspace: Workspace; onRefresh: () => void }) {
   const accessories: List.Item.Accessory[] = [];
 
-if (ws.pinned) {
+  if (ws.pinned) {
     accessories.push({ icon: Icon.Pin, tooltip: "Pinned" });
   }
   if (ws.listening_ports && ws.listening_ports.length > 0) {
@@ -106,30 +101,30 @@ if (ws.pinned) {
     <List.Item
       title={ws.title || `Workspace ${ws.index}`}
       subtitle={ws.current_directory}
-      accessories={[...accessories, ...(cmuxOff ? [{ tag: { value: "오프라인", color: Color.SecondaryText } }] : [])]}
+      accessories={accessories}
       actions={
         <ActionPanel>
           <Action
             title="Switch to Workspace"
             icon={Icon.ArrowRight}
             onAction={async () => {
-              if (cmuxOff) {
-                await showToast({ style: Toast.Style.Animated, title: `cmux 실행 중...` });
-                await launchAndSelectWorkspace(ws.ref);
-                focusCmux();
-                await showToast({ style: Toast.Style.Success, title: `Switched to ${ws.title}` });
-                return;
-              }
               try {
                 selectWorkspace(ws.ref);
                 focusCmux();
                 await showToast({ style: Toast.Style.Success, title: `Switched to ${ws.title}` });
               } catch (err) {
-                await showToast({ style: Toast.Style.Failure, title: String(err) });
+                if ((err as Error)?.name === "CmuxNotRunningError") {
+                  await showToast({ style: Toast.Style.Animated, title: "cmux 실행 중..." });
+                  await launchAndSelectWorkspace(ws.ref);
+                  focusCmux();
+                  await showToast({ style: Toast.Style.Success, title: `Switched to ${ws.title}` });
+                } else {
+                  await showToast({ style: Toast.Style.Failure, title: String(err) });
+                }
               }
             }}
           />
-          {!cmuxOff && <Action
+          <Action
             title="Open Directory as New Workspace"
             icon={Icon.Plus}
             shortcut={{ modifiers: ["cmd"], key: "o" }}
@@ -142,7 +137,7 @@ if (ws.pinned) {
                 await showToast({ style: Toast.Style.Failure, title: String(err) });
               }
             }}
-          />}
+          />
           <Action
             title="Copy Path"
             icon={Icon.Clipboard}
