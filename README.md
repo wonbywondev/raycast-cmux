@@ -2,6 +2,10 @@
 
 Control [cmux](https://cmuxterm.app) — the GPU-accelerated terminal multiplexer — directly from Raycast. Browse and switch workspaces instantly, or open any Finder folder as a new workspace without touching the mouse.
 
+![List cmux Workspaces](media/list-workspaces.png)
+
+![Actions](media/list-workspaces-actions.png)
+
 ## Requirements
 
 - [cmux](https://cmuxterm.app) installed
