@@ -67,8 +67,14 @@
 
 ## Phase 6: 마무리
 - [x] README.md 작성 (명령어, 요구사항, 단축키, 설정)
-- [ ] 아이콘 디자인 (512×512 PNG → `assets/extension-icon.png`)
-- [ ] `raycast/extensions` 레포에 PR 제출 (선택)
+- [x] CHANGELOG.md 작성
+- [x] 스크린샷 3장 (media/)
+- [x] author wonbywondev, keywords 추가
+- [x] 아이콘 (cmux 앱 아이콘 사용)
+- [ ] 스토어 제출 (`npm run publish`) — 다음 이슈 해결 후
+  - [ ] ESLint 설정 파일 (.eslintrc.js) 누락
+  - [ ] Prettier 포맷 오류 (3개 소스 파일)
+  - [ ] Title Case 경고: "Cmux", "List Cmux Workspaces", "Open in Cmux"
 
 ## 핵심 참고 정보
 | 항목 | 값 |
