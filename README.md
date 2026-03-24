@@ -1,38 +1,40 @@
-# cmux for Raycast
+# cmux
 
-Raycast extension for [cmux](https://cmuxterm.app) — browse workspaces and open directories directly from Raycast.
+Control [cmux](https://cmuxterm.app) — the GPU-accelerated terminal multiplexer — directly from Raycast. Browse and switch workspaces instantly, or open any Finder folder as a new workspace without touching the mouse.
 
 ## Requirements
 
-- [cmux](https://cmuxterm.app) installed at `/Applications/cmux.app`
-- cmux **Socket Control** set to **Automation mode** (Settings → Socket Control)
+- [cmux](https://cmuxterm.app) installed
+- cmux **Socket Control** set to **Automation mode**
+  - Open cmux → Settings → Socket Control → Automation
 
 ## Commands
 
 ### List cmux Workspaces
 
-Browse and switch between your cmux workspaces.
+Browse all your cmux workspaces and switch to them instantly.
 
-- **Enter** — switch to workspace (launches cmux if not running)
-- **⌘O** — open workspace directory as a new workspace
-- **⌘C** — copy directory path to clipboard
-- **⌘⌫** — close workspace
+| Action | Shortcut |
+|--------|----------|
+| Switch to workspace | Enter |
+| Open directory as new workspace | ⌘O |
+| Copy directory path | ⌘C |
+| Close workspace | ⌘⌫ |
 
-The list stays cached when cmux is off and refreshes automatically every 2 seconds when cmux is running.
+The workspace list is cached locally and refreshes automatically every 2 seconds. If cmux is not running, the last known list is shown — selecting a workspace will launch cmux and switch to it automatically.
 
 ### Open in cmux
 
-Opens the currently selected folder (or file's parent folder) in Finder as a new cmux workspace.
+Opens the currently selected item in Finder as a new cmux workspace.
 
-Invoke via Raycast with a Finder window open. Works whether cmux is running or not.
+- Folder selected → opens that folder
+- File selected → opens the file's parent folder
+- No selection → opens the current Finder window's folder
 
-## Setup
-
-1. Open cmux → Settings → Socket Control → set to **Automation mode**
-2. Install this extension and assign hotkeys as needed
+Works whether cmux is running or not. If cmux is off, it launches automatically and opens the workspace.
 
 ## Preferences
 
 | Preference | Default | Description |
-|---|---|---|
-| cmux CLI Path | `/opt/homebrew/bin/cmux` | Path to the cmux CLI binary |
+|------------|---------|-------------|
+| cmux CLI Path | `/opt/homebrew/bin/cmux` | Path to the cmux CLI binary (change if installed elsewhere) |

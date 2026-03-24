@@ -2,10 +2,11 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "cmux",
   "title": "cmux",
-  "description": "Control cmux terminal from Raycast",
+  "description": "Browse and switch cmux workspaces, and open Finder selections in cmux — all from Raycast",
   "icon": "extension-icon.png",
   "author": "won",
   "categories": ["Developer Tools", "Productivity"],
+  "keywords": ["cmux", "terminal", "workspace", "multiplexer", "finder"],
   "license": "MIT",
   "commands": [
     {
