@@ -4,7 +4,7 @@
   "title": "cmux",
   "description": "Browse and switch cmux workspaces, and open Finder selections in cmux — all from Raycast",
   "icon": "extension-icon.png",
-  "author": "won",
+  "author": "wonbywondev",
   "categories": ["Developer Tools", "Productivity"],
   "keywords": ["cmux", "terminal", "workspace", "multiplexer", "finder"],
   "license": "MIT",
