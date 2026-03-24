@@ -72,10 +72,11 @@
 - [x] author wonbywondev, keywords 추가
 - [x] 아이콘 (cmux 앱 아이콘 사용)
 - [x] 스토어 제출 PR 생성 (https://github.com/raycast/extensions/pull/26595)
-- [ ] PR 리뷰 코멘트 반영 (Greptile 자동 리뷰)
-  - [ ] CHANGELOG.md 날짜 → `{PR_MERGE_DATE}` placeholder
-  - [ ] utils.ts JSDoc 폴링 주석 100ms → 10ms 수정
-  - [ ] utils.ts 수동 `Preferences` 인터페이스 제거 (raycast-env.d.ts 전역 타입 사용)
+- [x] PR 리뷰 코멘트 반영 (Greptile 자동 리뷰)
+  - [x] CHANGELOG.md 날짜 → `{PR_MERGE_DATE}` placeholder
+  - [x] utils.ts JSDoc 폴링 주석 100ms → 10ms 수정
+  - [x] utils.ts 수동 `Preferences` 인터페이스 제거 (raycast-env.d.ts 전역 타입 사용)
+- [ ] Raycast 팀 최종 승인 대기
 
 ## 핵심 참고 정보
 | 항목 | 값 |
