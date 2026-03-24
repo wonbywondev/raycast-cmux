@@ -1,5 +1,12 @@
 import { showHUD } from "@raycast/api";
-import { CmuxAccessDeniedError, CmuxNotRunningError, focusCmux, getFinderDirectory, openPathInCmux, openWorkspace, selectWorkspace } from "./utils";
+import {
+  CmuxNotRunningError,
+  focusCmux,
+  getFinderDirectory,
+  openPathInCmux,
+  openWorkspace,
+  selectWorkspace,
+} from "./utils";
 
 export default async function OpenInCmuxCommand() {
   try {
@@ -18,7 +25,10 @@ export default async function OpenInCmuxCommand() {
     try {
       wsId = openWorkspace(dir);
     } catch (err) {
-      if (err instanceof CmuxNotRunningError || (err as Error)?.name === "CmuxNotRunningError") {
+      if (
+        err instanceof CmuxNotRunningError ||
+        (err as Error)?.name === "CmuxNotRunningError"
+      ) {
         await showHUD("cmux 실행 중...");
         wsId = await openPathInCmux(dir);
         if (wsId) selectWorkspace(wsId);
@@ -34,7 +44,9 @@ export default async function OpenInCmuxCommand() {
     await showHUD(`cmux에서 열기: ${dir}`);
   } catch (err) {
     if ((err as Error)?.name === "CmuxAccessDeniedError") {
-      await showHUD("cmux 설정 필요: Settings → Socket Control → Automation mode");
+      await showHUD(
+        "cmux 설정 필요: Settings → Socket Control → Automation mode",
+      );
     } else {
       await showHUD(`오류: ${String(err)}`);
     }
