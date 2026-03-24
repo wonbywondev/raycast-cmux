@@ -10,16 +10,35 @@ import {
 } from "@raycast/api";
 import { useCachedPromise } from "@raycast/utils";
 import { useEffect } from "react";
-import { CmuxAccessDeniedError, CmuxNotRunningError, Workspace, closeWorkspace, focusCmux, launchAndSelectWorkspace, listWorkspaces, openWorkspace, selectWorkspace } from "./utils";
+import {
+  CmuxAccessDeniedError,
+  CmuxNotRunningError,
+  Workspace,
+  closeWorkspace,
+  focusCmux,
+  launchAndSelectWorkspace,
+  listWorkspaces,
+  openWorkspace,
+  selectWorkspace,
+} from "./utils";
 
 export default function ListWorkspacesCommand() {
-  const { data, isLoading, error, revalidate } = useCachedPromise(listWorkspaces, [], {
-    keepPreviousData: true,
-    onError: () => {}, // 에러는 렌더에서 직접 처리 — 기본 에러 바 억제
-  });
+  const { data, isLoading, error, revalidate } = useCachedPromise(
+    listWorkspaces,
+    [],
+    {
+      keepPreviousData: true,
+      onError: () => {}, // 에러는 렌더에서 직접 처리 — 기본 에러 바 억제
+    },
+  );
 
-  const isAccessDenied = error instanceof CmuxAccessDeniedError || error?.name === "CmuxAccessDeniedError";
-  const isNotRunning = !isAccessDenied && (error instanceof CmuxNotRunningError || error?.name === "CmuxNotRunningError");
+  const isAccessDenied =
+    error instanceof CmuxAccessDeniedError ||
+    error?.name === "CmuxAccessDeniedError";
+  const isNotRunning =
+    !isAccessDenied &&
+    (error instanceof CmuxNotRunningError ||
+      error?.name === "CmuxNotRunningError");
 
   // 2초마다 자동 갱신 — cmux OFF 시 existsSync 가드로 ~0ms 즉시 실패
   useEffect(() => {
@@ -48,7 +67,7 @@ export default function ListWorkspacesCommand() {
           actions={
             <ActionPanel>
               <Action
-                title="cmux 설정 열기"
+                title="Cmux 설정 열기"
                 icon={Icon.Gear}
                 onAction={() => open("/Applications/cmux.app")}
               />
@@ -69,14 +88,18 @@ export default function ListWorkspacesCommand() {
           actions={
             <ActionPanel>
               <Action
-                title="cmux 실행"
+                title="Cmux 실행"
                 icon={Icon.Play}
                 onAction={async () => {
                   await open("/Applications/cmux.app");
                   setTimeout(revalidate, 2000);
                 }}
               />
-              <Action title="새로고침" icon={Icon.RotateClockwise} onAction={revalidate} />
+              <Action
+                title="새로고침"
+                icon={Icon.RotateClockwise}
+                onAction={revalidate}
+              />
             </ActionPanel>
           }
         />
@@ -87,14 +110,22 @@ export default function ListWorkspacesCommand() {
   return <List isLoading={isLoading} />;
 }
 
-function WorkspaceItem({ workspace: ws, onRefresh }: { workspace: Workspace; onRefresh: () => void }) {
+function WorkspaceItem({
+  workspace: ws,
+  onRefresh,
+}: {
+  workspace: Workspace;
+  onRefresh: () => void;
+}) {
   const accessories: List.Item.Accessory[] = [];
 
   if (ws.pinned) {
     accessories.push({ icon: Icon.Pin, tooltip: "Pinned" });
   }
   if (ws.listening_ports && ws.listening_ports.length > 0) {
-    accessories.push({ text: ws.listening_ports.map((p) => `:${p}`).join(" ") });
+    accessories.push({
+      text: ws.listening_ports.map((p) => `:${p}`).join(" "),
+    });
   }
 
   return (
@@ -111,15 +142,27 @@ function WorkspaceItem({ workspace: ws, onRefresh }: { workspace: Workspace; onR
               try {
                 selectWorkspace(ws.ref);
                 focusCmux();
-                await showToast({ style: Toast.Style.Success, title: `Switched to ${ws.title}` });
+                await showToast({
+                  style: Toast.Style.Success,
+                  title: `Switched to ${ws.title}`,
+                });
               } catch (err) {
                 if ((err as Error)?.name === "CmuxNotRunningError") {
-                  await showToast({ style: Toast.Style.Animated, title: "cmux 실행 중..." });
+                  await showToast({
+                    style: Toast.Style.Animated,
+                    title: "cmux 실행 중...",
+                  });
                   await launchAndSelectWorkspace(ws.ref);
                   focusCmux();
-                  await showToast({ style: Toast.Style.Success, title: `Switched to ${ws.title}` });
+                  await showToast({
+                    style: Toast.Style.Success,
+                    title: `Switched to ${ws.title}`,
+                  });
                 } else {
-                  await showToast({ style: Toast.Style.Failure, title: String(err) });
+                  await showToast({
+                    style: Toast.Style.Failure,
+                    title: String(err),
+                  });
                 }
               }
             }}
@@ -132,9 +175,15 @@ function WorkspaceItem({ workspace: ws, onRefresh }: { workspace: Workspace; onR
               try {
                 openWorkspace(ws.current_directory);
                 focusCmux();
-                await showToast({ style: Toast.Style.Success, title: `Opened ${ws.current_directory}` });
+                await showToast({
+                  style: Toast.Style.Success,
+                  title: `Opened ${ws.current_directory}`,
+                });
               } catch (err) {
-                await showToast({ style: Toast.Style.Failure, title: String(err) });
+                await showToast({
+                  style: Toast.Style.Failure,
+                  title: String(err),
+                });
               }
             }}
           />
@@ -144,7 +193,10 @@ function WorkspaceItem({ workspace: ws, onRefresh }: { workspace: Workspace; onR
             shortcut={{ modifiers: ["cmd"], key: "c" }}
             onAction={async () => {
               await Clipboard.copy(ws.current_directory);
-              await showToast({ style: Toast.Style.Success, title: "Path copied" });
+              await showToast({
+                style: Toast.Style.Success,
+                title: "Path copied",
+              });
             }}
           />
           <Action
@@ -156,9 +208,15 @@ function WorkspaceItem({ workspace: ws, onRefresh }: { workspace: Workspace; onR
               try {
                 closeWorkspace(ws.ref);
                 onRefresh();
-                await showToast({ style: Toast.Style.Success, title: `Closed ${ws.title}` });
+                await showToast({
+                  style: Toast.Style.Success,
+                  title: `Closed ${ws.title}`,
+                });
               } catch (err) {
-                await showToast({ style: Toast.Style.Failure, title: String(err) });
+                await showToast({
+                  style: Toast.Style.Failure,
+                  title: String(err),
+                });
               }
             }}
           />
