@@ -65,10 +65,10 @@
 - [x] open-in-cmux cmux OFF 속도 개선 (100ms 폴링, ~1초)
 - [x] open-in-cmux cmux OFF 추가 속도 개선: `existsSync(socketPath)` 가드로 CLI 2.5초 타임아웃 제거 (~50ms 폴링)
 
-## Phase 6: (선택) 배포 준비
+## Phase 6: 마무리
+- [x] README.md 작성 (명령어, 요구사항, 단축키, 설정)
 - [ ] 아이콘 디자인 (512×512 PNG → `assets/extension-icon.png`)
-- [ ] README 작성 (스크린샷 포함)
-- [ ] `raycast/extensions` 레포에 PR 제출
+- [ ] `raycast/extensions` 레포에 PR 제출 (선택)
 
 ## 핵심 참고 정보
 | 항목 | 값 |
