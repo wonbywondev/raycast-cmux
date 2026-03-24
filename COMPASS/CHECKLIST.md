@@ -78,6 +78,9 @@
   - [x] utils.ts 수동 `Preferences` 인터페이스 제거 (raycast-env.d.ts 전역 타입 사용)
 - [ ] Raycast 팀 최종 승인 대기
 
+## 보류 사항
+- [ ] open-in-cmux: Finder 창 없이 cmux만 active일 때 동작 안 함 (Finder 없으면 dir="" 반환 → 종료). 해결 방향 미정.
+
 ## 핵심 참고 정보
 | 항목 | 값 |
 |------|-----|
